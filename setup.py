@@ -22,7 +22,7 @@ setup(
     entry_points={
         'console_scripts': [
             'talker = ur_asu.testmove_ur5e:main',
-            'ik_solver = ur_asu.ik_solver:main'
+            'ik_solver = ur_asu.scripts.ik_solver:main'
         ],
     },
 )
