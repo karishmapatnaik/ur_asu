@@ -1,0 +1,26 @@
+<?xml version="1.0"?>
+<?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
+<package format="3">
+  <name>ur_asu</name>
+  <version>0.0.0</version>
+  <description>TODO: Package description</description>
+  <maintainer email="kpatnaik@todo.todo">kpatnaik</maintainer>
+  <license>Apache-2.0</license>
+
+  <test_depend>ament_copyright</test_depend>
+  <test_depend>ament_flake8</test_depend>
+  <test_depend>ament_pep257</test_depend>
+  <test_depend>python3-pytest</test_depend>
+  
+  <exec_depend>rclpy</exec_depend>
+  <exec_depend>ur_robot_driver</exec_depend>
+  <exec_depend>pick_ik</exec_depend>
+
+  <exec_depend>kdl_parser</exec_depend>
+  <exec_depend>orocos_kdl</exec_depend>
+  <exec_depend>kdl_parser_py</exec_depend>
+
+  <export>
+    <build_type>ament_python</build_type>
+  </export>
+</package>
