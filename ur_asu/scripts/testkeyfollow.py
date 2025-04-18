@@ -14,10 +14,10 @@ import numpy as np
 
 from ur_asu.custom_libraries.actionlibrariesmax import hover_over  # <-- your function here
 
-GRIPPER_COMMANDS = {
-    "traj3": "close",  # grip block
-    "traj7": "open",   # release block
-}
+# GRIPPER_COMMANDS = {
+#     "traj3": "close",  # grip block
+#     "traj7": "open",   # release block
+# }
 
 class JTCClient(Node):
     def __init__(self):
@@ -27,20 +27,20 @@ class JTCClient(Node):
         self.declare_parameter("joints", [
             "shoulder_pan_joint", "shoulder_lift_joint", "elbow_joint",
             "wrist_1_joint", "wrist_2_joint", "wrist_3_joint"])
-        self.declare_parameter("target_marker_id", 6)
+        self.declare_parameter("target_object_name", "allen_key")
 
         controller_name = self.get_parameter("controller_name").value + "/follow_joint_trajectory"
         self.joints = self.get_parameter("joints").value
-        self.target_marker_id = self.get_parameter("target_marker_id").value
+        self.target_object_name = self.get_parameter("target_object_name").value
 
 
         self._action_client = ActionClient(self, FollowJointTrajectory, controller_name)
-        self._gripper_pub = self.create_publisher(String, "/gripper_command", 10)
+        # self._gripper_pub = self.create_publisher(String, "/gripper_command", 10)
 
         self.subscription = self.create_subscription(
             PoseStamped,
-            f"/marker_poses/marker_{self.target_marker_id}",  # Listening to a specific marker
-            self.marker_pose_callback,
+            f"/object_poses/object_{self.target_object_name}",  # Listening to a specific object
+            self.object_pose_callback,
             10)
 
         self.get_logger().info(f"Waiting for action server on {controller_name}")
@@ -73,11 +73,11 @@ class JTCClient(Node):
             goals[traj_name] = traj
         return goals
 
-    def publish_gripper(self, cmd):
-        msg = String()
-        msg.data = cmd
-        self.get_logger().info(f"Sending gripper command: {cmd}")
-        self._gripper_pub.publish(msg)
+    # def publish_gripper(self, cmd):
+    #     msg = String()
+    #     msg.data = cmd
+    #     self.get_logger().info(f"Sending gripper command: {cmd}")
+    #     self._gripper_pub.publish(msg)
 
     def execute_next_trajectory(self):
         # if self.i >= len(self.goals):
@@ -106,7 +106,7 @@ class JTCClient(Node):
         self._send_goal_future.add_done_callback(lambda f: self.goal_response_callback(f, traj_name))
 
 
-    def marker_pose_callback(self, msg: PoseStamped):
+    def object_pose_callback(self, msg: PoseStamped):
         # Convert quaternion to rpy
         quat = (
             msg.pose.orientation.x,
@@ -128,9 +128,8 @@ class JTCClient(Node):
             return
 
         # Only replan if we're not running something
-        # now = time.time()
-        # if self.executing:
-        #     return
+        if self.executing:
+            return
 
         if self.last_sent_pose is None or self._pose_changed_enough():
             # (x, y, z), (r, p, yw) = self.latest_target_pose
@@ -150,7 +149,7 @@ class JTCClient(Node):
 
     def send_trajectory(self, target_pose):
         (x, y, z), (r, p, yw) = target_pose
-        self.get_logger().info(f"Received pose for marker {self.target_marker_id}: <{x:.3f}, {y:.3f}, {z:.3f}> @ angle [{r:.1f}, {p:.1f}, {yw:.1f}]")
+        self.get_logger().info(f"Received pose for object {self.target_object_name}: <{x:.3f}, {y:.3f}, {z:.3f}> @ angle [{r:.1f}, {p:.1f}, {yw:.1f}]")
         self.trajectories = hover_over(target_pose, 0.30)
         self.goals = self.parse_trajectories()
         self.execute_next_trajectory()
@@ -174,7 +173,7 @@ class JTCClient(Node):
         # if traj_name == "traj7":
         #     self.publish_gripper("open")
 
-        if status == GoalStatus.STATUS_SUCCEEDED or GoalStatus.STATUS_ABORTED:
+        if status == GoalStatus.STATUS_SUCCEEDED:
             time.sleep(0)
             # self.execute_next_trajectory()
         else:
