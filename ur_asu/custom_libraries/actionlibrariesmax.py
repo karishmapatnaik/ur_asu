@@ -20,6 +20,8 @@ def move(position, rpy, seconds):
     if len(position) != 3:
         raise ValueError(f"Expected 3D position, got {position}")
     joint_angles = compute_ik(position, rpy)
+    # (j1, j2, j3, j4, j5, j6) = joint_angles
+    # print(f"{j1:.3f}, {j2:.3f}, {j3:.3f}, {j4:.3f}, {j5:.3f}, {j6:.3f}")
     if joint_angles is not None:
         return [make_point(joint_angles, seconds)]
     return []
@@ -63,4 +65,44 @@ def pick_and_place(block_pose, slot_pose):
         "traj6": moveZ(slot_pose[0],slot_pose[1],segment_duration), # holds block and descends into slot,
         "traj7": moveZ(slot_pose[0],slot_pose[1],segment_duration), # gripper open
         "traj8": home() # homing
+    }
+
+def spin_around(target_pose, height):
+    """
+    target_pose is (position, rpy), where position = [x, y, z] and only x, y are considered
+    """
+    target_position = target_pose[0].copy() # copying positions
+    target_position[2] = height  # Set height to given value
+    yaws = range(0, 360, 45)
+    segment_duration = 3 # specify segment_duration
+    return {
+        "traj0": move(target_position, [0, 180, yaws[0]], segment_duration),
+        "traj1": move(target_position, [0, 180, yaws[1]], segment_duration),
+        "traj2": move(target_position, [0, 180, yaws[2]], segment_duration),
+        "traj3": move(target_position, [0, 180, yaws[3]], segment_duration),
+        "traj4": move(target_position, [0, 180, yaws[4]], segment_duration),
+        "traj5": move(target_position, [0, 180, yaws[5]], segment_duration),
+        "traj6": move(target_position, [0, 180, yaws[6]], segment_duration),
+        "traj7": move(target_position, [0, 180, yaws[7]], segment_duration),
+    }
+
+def hover_over(target_pose, height):
+    """
+    target_pose is (position, rpy), where position = [x, y, z] and only x, y are considered
+    """
+    target_position = target_pose[0].copy() # copying positions
+    target_position[2] = height  # Set height to given value
+    fixed_roll = 0
+    fixed_pitch = 180
+    yaw = target_pose[1][2] # in degrees
+    # null_rot = [0, 180, 0]
+    target_rot = [fixed_roll, fixed_pitch, yaw]
+    segment_duration = 3 # specify segment_duration
+    # print(block_hover, target_rot)
+    (x, y, z) = target_position
+    print(f"Made target pose of <{x:.3f}, {y:.3f}, {z:.3f}> @ rpy [{fixed_roll:.1f}, {fixed_pitch:.1f}, {yaw:.1f}]")
+
+    return {
+        # "traj0": move(target_position,null_rot,segment_duration), # hovers over target 
+        "traj1": move(target_position,target_rot,segment_duration), # hovers over target, matching angle
     }
