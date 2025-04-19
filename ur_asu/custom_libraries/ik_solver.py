@@ -41,7 +41,8 @@ def ik_objective(q, target_pose):
 def compute_ik(position, rpy, q_guess=None, max_tries=5, dx=0.001):
 
     if q_guess is None:
-        q_guess = np.radians([85, -80, 90, -90, -90, 90])
+        q6 = -(np.mod(rpy[2] + 180, 360) - 180) # Adjust initial guess based on given yaw.
+        q_guess = np.radians([85, -80, 90, -90, -90, q6])
 
     original_position = np.array(position)
 
@@ -67,6 +68,7 @@ def compute_ik(position, rpy, q_guess=None, max_tries=5, dx=0.001):
 
         if result.success:
             # print(f"IK succeeded at position: {perturbed_position}")
+            # print(f"IK Cost is {ik_objective(result.x, target_pose)}")
             return result.x
 
     print(f"IK failed after {max_tries} attempts. Tried perturbing from {original_position}.")
