@@ -23,7 +23,7 @@ sudo apt-get install ros-humble-ur
     ├── custom_libraries/
     │   └── inverse_kinematics.py
     ├── scripts/
-    │   └── testmove_ur5e.py
+    │   └── <all scripts go here>
     ├── resource/
     ├── test/
     ├── setup.cfg
@@ -60,5 +60,5 @@ To test the package:
 
 2. Run the test script:
 ```
-  python3 testmove_ur5e.py
+  python3 testcartesian.py
 ```
